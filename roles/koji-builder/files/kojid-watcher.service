@@ -1,0 +1,10 @@
+[Unit]
+Description=Restarter for kojid-hub
+
+[Service]
+Type=simple
+ExecStart=/opt/kojid-watcher.sh
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

@@ -45,8 +45,58 @@
   notify:
     - restart kojid
 
+- name: Link dev kojid script
+  file:
+    src: /opt/koji/builder/kojid
+    dest: /usr/sbin/kojid-dev
+    state: link
+  when: dev_env
+
+- name: Replace kojid path in .service
+  replace:
+    path: /usr/lib/systemd/system/kojid.service
+    regexp: '/usr/sbin/kojid'
+    replace: '/usr/sbin/kojid-dev'
+  when: dev_env
+
+- name: Change py2 to py3 in kojid-dev
+  replace:
+    path: /usr/sbin/kojid-dev
+    regexp: '/usr/bin/python2'
+    replace: '/usr/bin/python3'
+  when: dev_env
+
+- name: Copy kojid restarter script
+  copy:
+    src: files/kojid-watcher.sh
+    dest: /opt
+    owner: root
+    group: root
+    mode: '770'
+  when: dev_env
+
+- name: Copy kojid restarter service
+  copy:
+    src: files/kojid-watcher.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  when: dev_env
+
+- name: Reload systemd
+  systemd:
+    daemon_reexec: yes
+  when: dev_env
+
 - name: start kojid
   service:
     name: kojid
     enabled: true
     state: started
+
+- name: start kojid restarter
+  service:
+    name: kojid-watcher.service
+    enabled: true
+    state: started
+  when: dev_env

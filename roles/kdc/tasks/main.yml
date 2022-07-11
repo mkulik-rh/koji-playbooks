@@ -1,3 +1,10 @@
+- name: Gather OS-specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_release }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution }}.yml"
+
 - name: configure FQDN in /etc/hosts
   copy:
     dest: '/etc/hosts'

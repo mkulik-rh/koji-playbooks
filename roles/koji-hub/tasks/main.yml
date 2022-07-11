@@ -211,3 +211,48 @@
     koji: kojidev
     name: trashcan
   become: false
+
+- name: Create symbolic link to koji-hub dev folder
+  file:
+    src: /opt/koji/hub
+    path: /usr/share/koji-hub-develop
+    state: link
+  when: dev_env
+
+- name: Change root folder in kojihub.conf
+  replace:
+    path: /etc/httpd/conf.d/kojihub.conf
+    regexp: '/usr/share/koji-hub'
+    replace: '/usr/share/koji-hub-develop'
+  notify:
+    - restart httpd
+  when: dev_env
+
+- name: Copy koji-hub restarter script
+  copy:
+    src: files/koji-hub-watcher.sh
+    dest: /opt
+    owner: root
+    group: root
+    mode: '770'
+  when: dev_env
+
+- name: Copy koji-hub restarter service
+  copy:
+    src: files/koji-hub-watcher.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  when: dev_env
+
+- name: Reload systemd
+  systemd:
+    daemon_reexec: yes
+  when: dev_env
+
+- name: start koji-hub restarter
+  service:
+    name: koji-hub-watcher.service
+    enabled: true
+    state: started
+  when: dev_env

@@ -52,3 +52,38 @@
     - ansible_selinux.status != "disabled"
   notify:
     - restart httpd
+
+- name: Disable SELinux
+  ansible.posix.selinux:
+    state: disabled
+  when: disable_selinux
+
+- name: Create symbolic link to koji-web dev folder
+  file:
+    src: /opt/koji/www
+    dest: /usr/share/koji-web-develop
+    state: link
+  when: dev_env
+
+- name: Create symbolic link to koji-web scripts
+  file:
+    src: /opt/koji/www/kojiweb
+    dest: /opt/koji/www/scripts
+    state: link
+  when: dev_env
+
+- name: Change root folder in kojiweb.conf
+  replace:
+    path: /etc/httpd/conf.d/kojiweb.conf
+    regexp: '/usr/share/koji-web'
+    replace: '/usr/share/koji-web-develop'
+  when: dev_env
+
+- name: Change root folder in web.conf
+  replace:
+    path: /etc/kojiweb/web.conf
+    regexp: '/usr/share/koji-web'
+    replace: '/usr/share/koji-web-develop'
+  notify:
+    - restart httpd
+  when: dev_env

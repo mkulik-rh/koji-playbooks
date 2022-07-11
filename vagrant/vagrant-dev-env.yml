@@ -3,10 +3,10 @@
   become: yes
   become_method: sudo
   pre_tasks:
-    - name: Install EPEL repo
-      yum:
-        name: epel-release
-        state: present
+    # - name: Install EPEL repo
+    #   yum:
+    #     name: epel-release
+    #     state: present
     - name: create filesystem on /dev/vdb
       filesystem:
         fstype: ext4
@@ -28,8 +28,8 @@
         dest: /var/lib/mock
         state: link
   vars:
-    dev_env: false
-    disable_selinux: false
+    dev_env: true
+    disable_selinux: true
   roles:
   - kdc
   - koji-ssl-admin
