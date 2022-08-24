@@ -37,6 +37,53 @@ SSL configuration
   https://kojidev.example.com/kojifiles/koji-ca.crt . External Koji clients
   can download this file to verify the HTTPS connections.
 
+
+Develop environment
+-----------------
+This is interactive deployment, where every change in source code is
+automatically applied in the deployed VM.
+
+Steps to setup:
+
+* Clone koji `CODE
+  <https://pagure.io/koji/commits/koji-1.29-updates>`_
+* Change path to your cloned koji code in Vagrant file (``DEV_ENV_PATH`` var
+  in ``VAGRANTFILE``)
+* Deploy VM with vagrant
+
+Important information:
+
+* Source code version must match installed one. (That's because installed
+  koji python pkg will be mismatched). This can be avoided by adding
+  ``/opt/koji/koji`` to ``PYTHONPATH`` by editing kojiweb.conf (not tested)
+
+  Example:
+
+  ``WSGIDaemonProcess koji lang=C.UTF-8 python-home=/path/to/project/venv``
+
+  or just replacing installed koji by linking it to ``/opt/koji/koji``.
+
+* Every change to kojihub or kojid will also affect the deployed environment.
+  Changes to kojid source code, while some tasks are executing, will result in
+  failure (kojid will be automatically restarted). The same applies to kojihub.
+* Due to the nature of how local files are connected with VM (via NFS) we have
+  some limitations. It is not possible to monitor changes to files/folder via
+  inotify, as a result we cannot use systemd path to handle monitor/restarts
+  (which would be ideal for that) and instead we need to use really 'hacky' bash
+  scripts to handle this.* Deployment was updated to use Fedora system with
+  disabled SElinux.
+
+What is covered by interactive deployment:
+
+* kojihub
+* kojiweb
+* kojid
+
+What is not covered by interactive deployment:
+
+* koji (Adding ``PYTHONPATH`` by python-home in WSGIDaemonProcess needs to be tested)
+
+
 Hard-coded things
 -----------------
 
